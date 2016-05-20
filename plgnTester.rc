@@ -1,0 +1,138 @@
+#include <windows.h>
+
+#define APP_ICON		100
+
+#ifdef RC_INVOKED
+
+// Pretty icon displayed by Explorer
+// APP_ICON           ICON    DISCARDABLE     "plgntstr.ico"
+
+// Version info viewable by Explorer
+#define _VM 0
+#define _VN 0
+#define _VI 1
+#define _VB 0
+
+#ifndef mk_str
+#define mk_str2(x) # x
+#define mk_str(x) mk_str2(x)
+#endif
+
+#define _VS mk_str(_VM) "." mk_str(_VN) "." mk_str(_VI) "-" mk_str(_VB) "\0"
+
+
+// normally found in <winver.h> included by <windows.h>
+// FILEFLAGS
+#define VS_FF_NORMAL            0x00000000L  // ok I made this one up
+#ifndef VS_FF_DEBUG
+#define VS_FF_DEBUG             0x00000001L
+#endif
+#ifndef VS_FF_PRERELEASE
+#define VS_FF_PRERELEASE        0x00000002L
+#endif
+// FILEOS
+#ifndef VOS_NT
+#define VOS_NT                  0x00040000L
+#endif
+#ifndef VOS__WINDOWS32
+#define VOS__WINDOWS32          0x00000004L
+#endif
+#ifndef VOS_NT_WINDOWS32
+#define VOS_NT_WINDOWS32        0x00040004L
+#endif
+// FILETYPE
+#ifndef VFT_APP
+#define VFT_APP                 0x00000001L
+#endif
+#ifndef VFT_DLL
+#define VFT_DLL                 0x00000002L
+#endif
+
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION _VM,_VN,_VI,_VB
+ PRODUCTVERSION _VM,_VN,_VI,_VB
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS VS_FF_DEBUG | VS_FF_PRERELEASE    // a debug build is never a release
+#else
+ FILEFLAGS VS_FF_NORMAL
+#endif
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080904b0"
+        BEGIN
+            VALUE "Comments", "PluginTester, allows execution of NSIS plugins for testing.\0"
+            VALUE "CompanyName", "http://www.fdos.org\0"
+            VALUE "FileDescription", "Invokes NSIS plugins\0"
+            VALUE "FileVersion", _VS
+            VALUE "InternalName", "plgntstr\0"
+// Only about the 1st 45+ characters are shown in Windows 2000 properties Version dialog
+            VALUE "LegalCopyright", "based on NSIS ...\0"
+            VALUE "LegalTrademarks", "see NSIS\0"
+            VALUE "OriginalFilename", "plgntstr.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "PluginTester\0"
+            VALUE "ProductVersion", _VS
+            VALUE "SpecialBuild", "KJD\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x809, 1200
+    END
+END
+
+#undef _VM
+#undef _VN
+#undef _VI
+#undef _VB
+#undef _VS
+
+
+#include "resource.h"
+
+IDD_INST DIALOGEX 0, 0, 280, 162
+STYLE DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+//  PUSHBUTTON      "",IDC_BACK,171,142,50,14,NOT WS_VISIBLE | WS_GROUP
+    PUSHBUTTON      "",IDOK,223,142,50,14
+//  PUSHBUTTON      "",IDCANCEL,7,142,50,14
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,138,
+                    267,1
+    CONTROL         "",IDC_CHILDRECT,"Static",SS_BLACKRECT | NOT WS_VISIBLE | 
+                    WS_GROUP,7,6,266,130
+    CTEXT           "",IDC_VERSTR,59,145,108,8,WS_DISABLED
+END
+
+IDD_INSTFILES DIALOGEX 0, 0, 266, 130
+STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,24,10,241,
+                    11
+    CONTROL         "",IDC_INTROTEXT,"Static",SS_LEFTNOWORDWRAP | 
+                    SS_NOPREFIX,24,0,241,8
+    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | 
+                    LVS_NOCOLUMNHEADER | NOT WS_VISIBLE | WS_BORDER | 
+                    WS_TABSTOP,0,25,265,104
+    ICON            IDI_ICON2,IDC_ULICON,0,0,22,20
+//  PUSHBUTTON      "",IDC_SHOWDETAILS,0,28,60,14,NOT WS_TABSTOP
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON2               ICON    DISCARDABLE     "nsis.ico"
+
+
+#endif
