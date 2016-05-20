@@ -3,7 +3,7 @@
 *.o
 VS2015/Debug
 VS2015/Release
-VS2015/plgnTester.VC.db
-VS2015/plgnTester.VC.VC.opendb
+VS2015/plgntester.VC.db
+VS2015/plgntester.VC.VC.opendb
 VS2015/plgntester.vcxproj.user
 VS2015/.vs

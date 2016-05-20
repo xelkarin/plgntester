@@ -14,6 +14,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <tchar.h>
 
 #include "resource.h"
 
@@ -33,7 +34,7 @@
 typedef struct stack_t
 {
   struct stack_t *next;
-  char text[NSIS_MAX_STRLEN];
+  TCHAR text[NSIS_MAX_STRLEN];
 } stack_t;
 
 
@@ -54,14 +55,14 @@ bool empty(stack_t **stack)
    1st element pushed onto stack and inits underlying
    stack structure accordingly.
  */
-void pushstring(stack_t **stack, char *str, bool bottom=false)
+void pushstring(stack_t **stack, LPCTSTR str, bool bottom=false)
 {
   stack_t *element;
 
   /* verify a valid stack (at least nonNULL) was provided */
   if (stack == NULL)
   {
-    printf("Error, passed NULL stack, unable to push [%s]\n", str);
+    _tprintf(_T("Error, passed NULL stack, unable to push [%s]\n"), str);
     exit(5);
   }
 
@@ -69,7 +70,7 @@ void pushstring(stack_t **stack, char *str, bool bottom=false)
   element = (stack_t *)GlobalAlloc(GPTR /*fixed & zeroed*/, sizeof(stack_t));
   if (element == NULL)
   {
-    printf("Error, unable to allocate memory to push [%s] onto stack\n", str);
+    _tprintf(_T("Error, unable to allocate memory to push [%s] onto stack\n"), str);
     exit(4);
   }
 
@@ -88,7 +89,7 @@ void pushstring(stack_t **stack, char *str, bool bottom=false)
    in a manner compatible with how NSIS pops them
    copies top of stack to str
  */
-void popstring(stack_t **stack, char *str)
+void popstring(stack_t **stack, LPTSTR str)
 {
   stack_t *element;;
 
@@ -123,16 +124,16 @@ void popstring(stack_t **stack, char *str)
    copies str to user_vars[which]
    prints warning if which is invalid and returns
  */
-void setuservar(char *user_vars, int which, const char *str)
+void setuservar(LPTSTR user_vars, int which, LPCTSTR str)
 {
   if ((which < 0) || (which >= MAXUSERVARS))
   {
-    printf("Warning attempting to set invalid user_var[%i] with %s\n", which, str);
+    _tprintf(_T("Warning attempting to set invalid user_var[%i] with %s\n"), which, str);
     return;
   }
 
   /* array is stored in a flat char buffer */
-  char *val = user_vars + (which * NSIS_MAX_STRLEN);
+  LPTSTR val = user_vars + (which * NSIS_MAX_STRLEN);
 
   /* actually copy the string to the variable */
   lstrcpyn(val, str, NSIS_MAX_STRLEN);
@@ -146,7 +147,7 @@ void setuservar(char *user_vars, int which, const char *str)
    directly manipulating the string returned.
    returns NULL on error, such as invalid user var requested.
  */
-const char *getuservar(char *user_vars, int which)
+const LPCTSTR getuservar(LPTSTR user_vars, int which)
 {
   if ((which < 0) || (which >= MAXUSERVARS))
   {
@@ -155,7 +156,7 @@ const char *getuservar(char *user_vars, int which)
   }
 
   /* array is stored in a flat char buffer */
-  const char *val = user_vars + (which * NSIS_MAX_STRLEN);
+  LPCTSTR val = user_vars + (which * NSIS_MAX_STRLEN);
 
   return val;
 }
@@ -164,19 +165,19 @@ const char *getuservar(char *user_vars, int which)
 /* initializes default values
    presently just clears to 0,
  */
-void initpredefvars(char *user_vars)
+void initpredefvars(LPTSTR user_vars)
 {
   int i;
   /* simply set $0-$9 and $R0-$R10 to 0 */
   for (i = 0; i < 20; i++)
-    setuservar(user_vars, i, "0");
+    setuservar(user_vars, i, _T("0"));
 
   /* set others to some reasonable value */
-  setuservar(user_vars, 20, "");     /* empty command line */
-  setuservar(user_vars, 21, ".\\");  /* $INSTDIR = current ??? */
-  setuservar(user_vars, 22, ".\\");  /* $OUTDIR */
-  setuservar(user_vars, 23, ".\\");  /* $EXEDIR */
-  setuservar(user_vars, 24, "1033"); /* $LANGUAGE=english */
+  setuservar(user_vars, 20, _T(""));     /* empty command line */
+  setuservar(user_vars, 21, _T(".\\"));  /* $INSTDIR = current ??? */
+  setuservar(user_vars, 22, _T(".\\"));  /* $OUTDIR */
+  setuservar(user_vars, 23, _T(".\\"));  /* $EXEDIR */
+  setuservar(user_vars, 24, _T("1033")); /* $LANGUAGE=english */
 }
 
 
@@ -184,23 +185,23 @@ void initpredefvars(char *user_vars)
 
 /* The exported API without name mangling */
 extern "C" {
-  typedef void (* pluginFunc)(HWND hwndParent, int string_size, char *variables, stack_t **stacktop);
+  typedef void (* pluginFunc)(HWND hwndParent, int string_size, LPTSTR variables, stack_t **stacktop);
 }
 
 
 /* returns pointer to function in plugin or exits with message on any error */
-pluginFunc getPluginFunction(const char *plugin, const char *exportedName)
+pluginFunc getPluginFunction(LPCTSTR plugin, const char *exportedName)
 {
   HMODULE hMod = LoadLibrary(plugin);
   if (hMod == NULL)
   {
-    printf("Failed to load %s\n", plugin);
+    _tprintf(_T("Failed to load %s\n"), plugin);
     exit(3);
   }
   pluginFunc pFn = (pluginFunc)GetProcAddress(hMod, exportedName);
   if (pFn == NULL)
   {
-    printf("Failed to obtain address of function %s in module %s\n", exportedName, plugin);
+    _tprintf(_T("Failed to obtain address of function %S in module %s\n"), exportedName, plugin);
     exit(2);
   }
   return pFn;
@@ -208,27 +209,27 @@ pluginFunc getPluginFunction(const char *plugin, const char *exportedName)
 
 
 /* displays the full contents of the stack and user variables */
-void showstuff(char *variables, stack_t **stacktop)
+void showstuff(LPTSTR variables, stack_t **stacktop)
 {
   int i;
   stack_t *element;
 
   printf("User variables are:\n");
   for (i = 0; i < 10; i++)
-    printf("$%i = [%s]\n", i, getuservar(variables, i));
+    _tprintf(_T("$%i = [%s]\n"), i, getuservar(variables, i));
   for (i = 10; i < 20; i++)
-    printf("$R%i = [%s]\n", i-10, getuservar(variables, i));
-  printf("$CMDLINE  = [%s]\n", getuservar(variables, 20));
-  printf("$INSTDIR  = [%s]\n", getuservar(variables, 21));
-  printf("$OUTDIR   = [%s]\n", getuservar(variables, 22));
-  printf("$EXEDIR   = [%s]\n", getuservar(variables, 23));
-  printf("$LANGUAGE = [%s]\n", getuservar(variables, 24));
+    _tprintf(_T("$R%i = [%s]\n"), i-10, getuservar(variables, i));
+  _tprintf(_T("$CMDLINE  = [%s]\n"), getuservar(variables, 20));
+  _tprintf(_T("$INSTDIR  = [%s]\n"), getuservar(variables, 21));
+  _tprintf(_T("$OUTDIR   = [%s]\n"), getuservar(variables, 22));
+  _tprintf(_T("$EXEDIR   = [%s]\n"), getuservar(variables, 23));
+  _tprintf(_T("$LANGUAGE = [%s]\n"), getuservar(variables, 24));
   printf("Stack is %s\n", empty(stacktop)?"empty":"");
   if (!empty(stacktop))  /* peek at all elements */
   {
     element = *stacktop;
     do {
-      printf("[%s]\n", element->text);
+      _tprintf(_T("[%s]\n"), element->text);
       element = element->next;
     } while (element != NULL);
   }
@@ -238,7 +239,7 @@ void showstuff(char *variables, stack_t **stacktop)
 /* displays a single result pushed on to stack after returning from plugin
    sets global variable result to top of stack, overwritten on all calls.
  */
-char result[NSIS_MAX_STRLEN];
+TCHAR result[NSIS_MAX_STRLEN];
 void showresult(stack_t **stack)
 {
   if (empty(stack))  /* we expect a success or error message pushed on stack */
@@ -249,7 +250,7 @@ void showresult(stack_t **stack)
   else
   {
     popstring(stack, result);
-    printf("Found [%s] on stack and now stack is %sempty.\n", result, empty(stack)?"":"NOT ");
+    _tprintf(_T("Found [%s] on stack and now stack is %sempty.\n"), result, empty(stack)?_T(""):_T("NOT "));
   }
 }
 
@@ -257,10 +258,10 @@ void showresult(stack_t **stack)
 
 typedef struct ExecData {
   pluginFunc pFn;
-  char * caption;
-  char * statusMsg;
+  LPTSTR caption;
+  LPTSTR statusMsg;
   HWND hwndBG;
-  char *user_vars;
+  LPTSTR user_vars;
   stack_t **stack;
 } ExecData;
 ExecData *execData;
@@ -344,7 +345,7 @@ static BOOL CALLBACK InstProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
   if (uMsg == WM_NOTIFY_INSTPROC_DONE)
   {
-    SetDlgItemText(GetParent(hwndDlg), IDOK, "Close");
+    SetDlgItemText(GetParent(hwndDlg), IDOK, _T("Close"));
 
     EnableWindow(m_hwndOK, TRUE);
     SetActiveCtl(m_hwndOK);
@@ -361,7 +362,7 @@ static BOOL CALLBACK InstProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
     {
       HMENU menu = CreatePopupMenu();
       POINT pt;
-      AppendMenu(menu,MF_STRING,1,"Copy details to clipboard");
+      AppendMenu(menu,MF_STRING,1,_T("Copy details to clipboard"));
       if (lParam == ((UINT)-1))
       {
         RECT r;
@@ -385,7 +386,7 @@ static BOOL CALLBACK InstProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
         LVITEM item;
         HGLOBAL memory;
         LPTSTR ptr;//,endPtr;
-        char g_tmp[2048];
+        TCHAR g_tmp[2048];
 
         // 1st pass - determine clipboard memory required.
         item.iSubItem   = 0;
@@ -400,8 +401,8 @@ static BOOL CALLBACK InstProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
         // Clipboard MSDN docs say mem must be GMEM_MOVEABLE
         OpenClipboard(0);
         EmptyClipboard();
-        memory = GlobalAlloc(GHND,total);
-        ptr = (char *)GlobalLock(memory);
+        memory = GlobalAlloc(GHND,(sizeof(TCHAR)*total));
+        ptr = (TCHAR *)GlobalLock(memory);
         //endPtr = ptr+total-2; // -2 to allow for CR/LF
         i = 0;
         do {
@@ -439,7 +440,7 @@ BOOL CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     SetClassLong(hwndDlg,GCL_HICON,(long)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_ICON2),IMAGE_ICON,0,0,LR_DEFAULTSIZE|LR_SHARED));
     SetWindowText(hwndDlg, execData->caption);
 
-    SetDlgItemText(hwndDlg, IDOK, "Working");
+    SetDlgItemText(hwndDlg, IDOK, _T("Working"));
 
     EnableWindow(m_hwndOK, FALSE);
     SetActiveCtl(m_hwndOK);
@@ -515,7 +516,7 @@ BOOL CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 
-int main(int argc, char *argv[])
+int _tmain(int argc, TCHAR *argv[])
 {
   bool verbose=true;
   bool gui=true;
@@ -527,7 +528,7 @@ int main(int argc, char *argv[])
 
   /* these are passed to plugin */
   stack_t *stack = NULL;
-  char user_vars[NSIS_MAX_STRLEN*MAXUSERVARS];
+  TCHAR user_vars[NSIS_MAX_STRLEN*MAXUSERVARS];
 
   /* initialize to predefined stuff */
   initpredefvars(user_vars);
@@ -536,7 +537,7 @@ int main(int argc, char *argv[])
   /* check command line appears valid, else print basic help */
   if (argc < 3)
   {
-    printf("NSIS plugin wrapper/tester\nUsage: %s [options] plugin function [args]\n", argv[0]);
+    _tprintf(_T("NSIS plugin wrapper/tester\nUsage: %s [options] plugin function [args]\n"), argv[0]);
     printf("Where options may be ommited, /silent /nogui /debug\n");
     printf("Where plugin is the name (dll) of the plugin to load\n");
     printf("and function is the name of the exported function to invoke.\n");
@@ -550,18 +551,18 @@ int main(int argc, char *argv[])
   /* get plugin and function to invoke and possibly user variables */
   for (i = 1; (i < argc) && !pf; i++)
   {
-    if (lstrcmp("/VAR", argv[i]) == 0)
+    if (lstrcmp(_T("/VAR"), argv[i]) == 0)
     {
-      setuservar(user_vars, atoi(argv[i+1]), argv[i+2]);
+      setuservar(user_vars, _ttoi(argv[i+1]), argv[i+2]);
       i+=2;
     }
     else if (!pn)
     {
-      if (lstrcmp("/silent", argv[i]) == 0) /* silent mode, no output */
+      if (lstrcmp(_T("/silent"), argv[i]) == 0) /* silent mode, no output */
         verbose = false; /* silent = true */
-      else if (lstrcmp("/nogui", argv[i]) == 0) /* don't mimic NSIS gui */
+      else if (lstrcmp(_T("/nogui"), argv[i]) == 0) /* don't mimic NSIS gui */
         gui = false;
-      else if (lstrcmp("/debug", argv[i]) == 0) /* current just display stack */
+      else if (lstrcmp(_T("/debug"), argv[i]) == 0) /* current just display stack */
         debug = true;
       else  /* plugin name */
         pn = i;
@@ -574,9 +575,9 @@ int main(int argc, char *argv[])
   /* now push items onto stack in reverse order */
   for (j=argc-1; j >= i; j--)
   {
-    if (lstrcmp("/VAR", argv[j-2]) == 0)
+    if (lstrcmp(_T("/VAR"), argv[j-2]) == 0)
     {
-      setuservar(user_vars, atoi(argv[j-1]), argv[j]);
+      setuservar(user_vars, _ttoi(argv[j-1]), argv[j]);
       j-=2;
     }
     else
@@ -588,33 +589,35 @@ int main(int argc, char *argv[])
 
 
   /* get the exported functions we want to test */
-  pFn = getPluginFunction(argv[pn], argv[pf]);
+  char exportedName[2048];
+  wcstombs(exportedName, argv[pf], 2048);
+  pFn = getPluginFunction(argv[pn], exportedName);
 
 
   /* caption displayed on window */
-  char caption[80];
+  TCHAR caption[80];
   memset(caption, 0, sizeof(caption)); /* ensure '\0' terminated */
-  strncpy(caption, argv[pn], 39);
-  strcat(caption, ":");
-  strncat(caption, argv[pf], 39);
+  _tcsncpy(caption, argv[pn], 39);
+  _tcscat(caption, _T(":"));
+  _tcsncat(caption, argv[pf], 39);
 
 
   /* status text, more or less function call */
   /* status text */
-  char status[1024];  /* MAJOR buffer overflow potential! */
+  TCHAR status[1024];  /* MAJOR buffer overflow potential! */
   memset(status, 0, sizeof(status));
-  strcpy(status, argv[pf]);
-  strcat(status, "(");
+  _tcscpy(status, argv[pf]);
+  _tcscat(status, _T("("));
   if (!empty(&stack))  /* peek at all elements */
   {
     stack_t *element = stack;
     do {
-      strcat(status, element->text);
+      _tcscat(status, element->text);
       element = element->next;
-      if (element != NULL) strcat(status, ",");
+      if (element != NULL) _tcscat(status, _T(","));
     } while (element != NULL);
   }
-  strcat(status, ")");
+  _tcscat(status, _T(")"));
 
 
   /* setup information passed around about plugin func to execute & its env */
@@ -631,7 +634,7 @@ int main(int argc, char *argv[])
 
   /* perform the call to plugin and display the results */
   if (verbose)
-    printf("now invoking %s.%s\n", argv[pn], argv[pf]);
+    _tprintf(_T("now invoking %s.%s\n"), argv[pn], argv[pf]);
 
 #ifdef NSIS_GUI
   if (gui) /* if not silent mode and compiled in, display NSIS like output window */
