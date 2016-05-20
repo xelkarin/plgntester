@@ -15,7 +15,7 @@ directory, you will need to explicitly provide its path.
 An error message is returned if failed to load.
 
 function is the name of the exported function to invoke.
-It should be exactly as exported, which should match 
+It should be exactly as exported, which should match
 the name used in a NSIS script.  An error message is
 returned if function is not found or other error obtaining
 its procedure address.
@@ -29,7 +29,7 @@ and 10-19 correspond to NSIS variables $R0-$R9.
 
 The remaining arguments (if any) are the strings pushed onto
 the stack and passed to the plugin.  Strings are pushed on
-the stack in opposite order from command line.  That is, 
+the stack in opposite order from command line.  That is,
 pass arguments on the command line in same order as if you
 were invoking the plugin from a NSIS script (calling order,
 which should match order plugin pops them).

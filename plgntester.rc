@@ -105,7 +105,7 @@ BEGIN
 //  PUSHBUTTON      "",IDCANCEL,7,142,50,14
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,138,
                     267,1
-    CONTROL         "",IDC_CHILDRECT,"Static",SS_BLACKRECT | NOT WS_VISIBLE | 
+    CONTROL         "",IDC_CHILDRECT,"Static",SS_BLACKRECT | NOT WS_VISIBLE |
                     WS_GROUP,7,6,266,130
     CTEXT           "",IDC_VERSTR,59,145,108,8,WS_DISABLED
 END
@@ -116,10 +116,10 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,24,10,241,
                     11
-    CONTROL         "",IDC_INTROTEXT,"Static",SS_LEFTNOWORDWRAP | 
+    CONTROL         "",IDC_INTROTEXT,"Static",SS_LEFTNOWORDWRAP |
                     SS_NOPREFIX,24,0,241,8
-    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | 
-                    LVS_NOCOLUMNHEADER | NOT WS_VISIBLE | WS_BORDER | 
+    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL |
+                    LVS_NOCOLUMNHEADER | NOT WS_VISIBLE | WS_BORDER |
                     WS_TABSTOP,0,25,265,104
     ICON            IDI_ICON2,IDC_ULICON,0,0,22,20
 //  PUSHBUTTON      "",IDC_SHOWDETAILS,0,28,60,14,NOT WS_TABSTOP
