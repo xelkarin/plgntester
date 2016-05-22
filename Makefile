@@ -17,7 +17,6 @@ LDFLAGS += -municode -mwindows -static-libgcc
 
 TARGET = plgntester.exe
 OBJS = plgntester.o
-LDLIBS = -lcomctl32 -lole32
 
 RES_SRC  = plgntester.rc
 RES_OBJ = plgntester-rc.o

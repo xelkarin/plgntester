@@ -16,18 +16,12 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#include "resource.h"
-
 
 /* specifies the maximum size of a string pushed,
    popped, passed, etc.  set to match config.h
    or whatever for testing.  NSIS v2 default is 1024
 */
 #define NSIS_MAX_STRLEN 1024
-
-
-/* compile in support for NSIS like GUI */
-#define NSIS_GUI
 
 
 /* stack element, ie parameter to plugin, etc */
@@ -258,268 +252,23 @@ void showresult(stack_t **stack)
 
 typedef struct ExecData {
   pluginFunc pFn;
-  LPTSTR caption;
-  LPTSTR statusMsg;
   HWND hwndBG;
   LPTSTR user_vars;
   stack_t **stack;
 } ExecData;
 ExecData *execData;
 
-#ifdef NSIS_GUI
-static void /*NSISCALL*/ NotifyCurWnd(UINT uNotifyCode);
-#else
-#define NotifyCurWnd(x)
-#endif
-
 
 static DWORD WINAPI plugin_thread(LPVOID param)
 {
-  HRESULT g_hres=OleInitialize(NULL);
-
-  {
-    execData->pFn(execData->hwndBG, NSIS_MAX_STRLEN, execData->user_vars, execData->stack);
-    //MessageBox(NULL, "still working?", "test", 0);
-  }
-  NotifyCurWnd(WM_NOTIFY_INSTPROC_DONE);
-
-  OleUninitialize();
-
+  execData->pFn(execData->hwndBG, NSIS_MAX_STRLEN, execData->user_vars, execData->stack);
   return 0;
 }
-
-
-#ifdef NSIS_GUI
-
-HWND insthwnd, insthwnd2;
-
-HWND m_curwnd;
-static HWND m_hwndOK;
-
-
-static void /*NSISCALL*/ SetActiveCtl(HWND hCtl)
-{
-  SendMessage(execData->hwndBG, WM_NEXTDLGCTL, (WPARAM) hCtl, TRUE);
-}
-
-static void /*NSISCALL*/ NotifyCurWnd(UINT uNotifyCode)
-{
-  if (m_curwnd)
-    PostMessage(m_curwnd, uNotifyCode, 0, 0);
-}
-
-
-static BOOL CALLBACK InstProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-  HWND linsthwnd=insthwnd;
-
-  if (uMsg == WM_INITDIALOG)
-  {
-    RECT r;
-    LVCOLUMN lvc = {LVCF_WIDTH, 0, -1, 0, 0, -1};
-
-    insthwnd2=GetDlgItem(hwndDlg,IDC_INTROTEXT);
-    linsthwnd=insthwnd=GetDlgItem(hwndDlg,IDC_LIST1);
-
-
-    GetClientRect(linsthwnd, &r);
-    lvc.cx = r.right - GetSystemMetrics(SM_CXHSCROLL);
-    ListView_InsertColumn(linsthwnd, 0, &lvc);
-
-    ListView_SetExtendedListViewStyleEx(linsthwnd, LVS_EX_LABELTIP, LVS_EX_LABELTIP);
-    ShowWindow(linsthwnd,SW_SHOWNA);
-
-
-    {
-      HWND progresswnd=GetDlgItem(hwndDlg,IDC_PROGRESS);
-      SendMessage(progresswnd,PBM_SETRANGE,0,MAKELPARAM(0,30000));
-    }
-
-    return FALSE;
-  }
-
-  if (uMsg == WM_NOTIFY_START) {
-    DWORD id;
-    CloseHandle(CreateThread(NULL,0,plugin_thread,0,0,&id));
-  }
-
-  if (uMsg == WM_NOTIFY_INSTPROC_DONE)
-  {
-    SetDlgItemText(GetParent(hwndDlg), IDOK, _T("Close"));
-
-    EnableWindow(m_hwndOK, TRUE);
-    SetActiveCtl(m_hwndOK);
-
-    //PostMessage(GetParent(hwndDlg), WM_COMMAND, IDOK/*wParam*/, 0/*lParam*/);
-  }
-
-  //>>>Ximon Eighteen aka Sunjammer 30th August 2002
-  //+++Popup "Copy Details To Clipboard" menu when RMB clicked in DetailView
-  if (uMsg == WM_CONTEXTMENU && wParam == (WPARAM) linsthwnd)
-  {
-    int count = ListView_GetItemCount(linsthwnd);
-    if (count > 0)
-    {
-      HMENU menu = CreatePopupMenu();
-      POINT pt;
-      AppendMenu(menu,MF_STRING,1,_T("Copy details to clipboard"));
-      if (lParam == ((UINT)-1))
-      {
-        RECT r;
-        GetWindowRect(linsthwnd, &r);
-        pt.x = r.left;
-        pt.y = r.top;
-      }
-      else
-      {
-        pt.x = GET_X_LPARAM(lParam);
-        pt.y = GET_Y_LPARAM(lParam);
-      }
-      if (1==TrackPopupMenu(
-        menu,
-        TPM_NONOTIFY|TPM_RETURNCMD,
-        pt.x,
-        pt.y,
-        0,linsthwnd,0))
-      {
-        int i,total = 1; // 1 for the null char
-        LVITEM item;
-        HGLOBAL memory;
-        LPTSTR ptr;//,endPtr;
-        TCHAR g_tmp[2048];
-
-        // 1st pass - determine clipboard memory required.
-        item.iSubItem   = 0;
-        item.pszText    = g_tmp;
-        item.cchTextMax = sizeof(g_tmp) - 1;
-        i = count;
-        while (i--)
-          // Add 2 for the CR/LF combination that must follow every line.
-          total += 2+SendMessage(linsthwnd,LVM_GETITEMTEXT,i,(LPARAM)&item);
-
-        // 2nd pass - store detail view strings on the clipboard
-        // Clipboard MSDN docs say mem must be GMEM_MOVEABLE
-        OpenClipboard(0);
-        EmptyClipboard();
-        memory = GlobalAlloc(GHND,(sizeof(TCHAR)*total));
-        ptr = (TCHAR *)GlobalLock(memory);
-        //endPtr = ptr+total-2; // -2 to allow for CR/LF
-        i = 0;
-        do {
-          item.pszText = ptr;
-          item.cchTextMax = total;
-          SendMessage(linsthwnd,LVM_GETITEMTEXT,i,(LPARAM)&item);
-          ptr += lstrlen(ptr);
-          *ptr = '\r'; ptr++;
-          *ptr = '\n'; ptr++;
-        } while (++i < count);
-        // memory is auto zeroed when allocated with GHND - *ptr = 0;
-        GlobalUnlock(memory);
-        SetClipboardData(CF_TEXT,memory);
-        CloseClipboard();
-      }
-    }
-    return FALSE;
-  }
-  //<<<
-  return 0 /*HandleStaticBkColor()*/ ;
-}
-
-
-BOOL CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-  if (uMsg == WM_INITDIALOG)
-  {
-    {
-      execData->hwndBG=hwndDlg;
-      m_hwndOK=GetDlgItem(hwndDlg,IDOK);
-      m_curwnd = NULL;
-    }
-
-
-    SetClassLong(hwndDlg,GCL_HICON,(long)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_ICON2),IMAGE_ICON,0,0,LR_DEFAULTSIZE|LR_SHARED));
-    SetWindowText(hwndDlg, execData->caption);
-
-    SetDlgItemText(hwndDlg, IDOK, _T("Working"));
-
-    EnableWindow(m_hwndOK, FALSE);
-    SetActiveCtl(m_hwndOK);
-
-    /* let outer dialog finish startup, then spawn inner dialog, allows showing on taskbar */
-    ShowWindow(hwndDlg, SW_SHOWNORMAL);
-    PostMessage(hwndDlg, WM_APP+1, 0, (LPARAM)0);
-  }
-
-
-  if (uMsg == (WM_APP+1))
-  {
-      m_curwnd=CreateDialogParam(
-        GetModuleHandle(NULL),
-        MAKEINTRESOURCE(IDD_INSTFILES),
-        hwndDlg,InstProc,(LPARAM)0
-      );
-      if (m_curwnd)
-      {
-        RECT r;
-
-        SetDlgItemText(m_curwnd,IDC_INTROTEXT,execData->statusMsg);
-
-        GetWindowRect(GetDlgItem(hwndDlg,IDC_CHILDRECT),&r);
-        ScreenToClient(hwndDlg,(LPPOINT)&r);
-        SetWindowPos(m_curwnd,0,r.left,r.top,0,0,SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOZORDER);
-        ShowWindow(m_curwnd,SW_SHOWNA);
-        NotifyCurWnd(WM_NOTIFY_START);
-      }
-  }
-
-
-  if (uMsg == WM_WINDOWPOSCHANGED)
-  {
-    SetWindowPos(execData->hwndBG, hwndDlg, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-  }
-
-
-  if (uMsg == WM_QUERYENDSESSION)
-  {
-    SetWindowLong(hwndDlg, DWL_MSGRESULT, FALSE);
-    return TRUE;
-  }
-
-  if (uMsg == WM_CLOSE)
-  {
-    uMsg = WM_COMMAND;
-    wParam = IDOK;
-    /* now fall through */
-  }
-  if (uMsg == WM_COMMAND)
-  {
-    if (LOWORD(wParam) == IDOK)
-    {
-      DestroyWindow(m_curwnd);
-      execData->hwndBG = 0;
-      EndDialog(hwndDlg, 0/*m_retcode*/);
-    }
-    else
-    {
-      // Forward WM_COMMANDs to inner dialogs, can be custom ones.
-      // Without this, enter on buttons in inner dialogs won't work.
-      SendMessage(m_curwnd, WM_COMMAND, wParam, lParam);
-    }
-  }
-
-  return 0; /* we handled the message, whatever it is */
-}
-
-
-#endif /* NSIS_GUI */
-
-
 
 
 int _tmain(int argc, TCHAR *argv[])
 {
   bool verbose=true;
-  bool gui=true;
   bool debug=false;
 
   pluginFunc pFn;
@@ -538,7 +287,7 @@ int _tmain(int argc, TCHAR *argv[])
   if (argc < 3)
   {
     _tprintf(_T("NSIS plugin wrapper/tester\nUsage: %s [options] plugin function [args]\n"), argv[0]);
-    printf("Where options may be ommited, /silent /nogui /debug\n");
+    printf("Where options may be ommited, /silent /debug\n");
     printf("Where plugin is the name (dll) of the plugin to load\n");
     printf("and function is the name of the exported function to invoke.\n");
     printf("User variables may be set using /VAR # str\n");
@@ -560,8 +309,6 @@ int _tmain(int argc, TCHAR *argv[])
     {
       if (lstrcmp(_T("/silent"), argv[i]) == 0) /* silent mode, no output */
         verbose = false; /* silent = true */
-      else if (lstrcmp(_T("/nogui"), argv[i]) == 0) /* don't mimic NSIS gui */
-        gui = false;
       else if (lstrcmp(_T("/debug"), argv[i]) == 0) /* current just display stack */
         debug = true;
       else  /* plugin name */
@@ -594,34 +341,8 @@ int _tmain(int argc, TCHAR *argv[])
   pFn = getPluginFunction(argv[pn], exportedName);
 
 
-  /* caption displayed on window */
-  TCHAR caption[80];
-  memset(caption, 0, sizeof(caption)); /* ensure '\0' terminated */
-  _tcsncpy(caption, argv[pn], 39);
-  _tcscat(caption, _T(":"));
-  _tcsncat(caption, argv[pf], 39);
-
-
-  /* status text, more or less function call */
-  /* status text */
-  TCHAR status[1024];  /* MAJOR buffer overflow potential! */
-  memset(status, 0, sizeof(status));
-  _tcscpy(status, argv[pf]);
-  _tcscat(status, _T("("));
-  if (!empty(&stack))  /* peek at all elements */
-  {
-    stack_t *element = stack;
-    do {
-      _tcscat(status, element->text);
-      element = element->next;
-      if (element != NULL) _tcscat(status, _T(","));
-    } while (element != NULL);
-  }
-  _tcscat(status, _T(")"));
-
-
   /* setup information passed around about plugin func to execute & its env */
-  ExecData ed = { pFn, caption, status, NULL, user_vars, &stack };
+  ExecData ed = { pFn, NULL, user_vars, &stack };
   execData = &ed;
 
 
@@ -636,16 +357,6 @@ int _tmain(int argc, TCHAR *argv[])
   if (verbose)
     _tprintf(_T("now invoking %s.%s\n"), argv[pn], argv[pf]);
 
-#ifdef NSIS_GUI
-  if (gui) /* if not silent mode and compiled in, display NSIS like output window */
-  {
-    /* since NSIS normally does this for plugins */
-    InitCommonControls();
-    /* actually invoke GUI -- just the NSIS installing dialog */
-    DialogBox(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_INST),0,DialogProc);
-  }
-  else
-#endif /* NSIS_GUI */
     plugin_thread(NULL);
 
   if (verbose)

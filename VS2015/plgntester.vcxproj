@@ -120,9 +120,6 @@
     <ClCompile Include="..\plgntester.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\resource.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="..\plgntester.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
