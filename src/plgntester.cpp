@@ -269,8 +269,6 @@ static DWORD WINAPI plugin_thread(LPVOID param)
 int _tmain(int argc, TCHAR *argv[])
 {
   bool verbose=true;
-  bool debug=false;
-
   pluginFunc pFn;
   int i, j, pn=0, pf=0;
   bool initstack=true;
@@ -287,7 +285,7 @@ int _tmain(int argc, TCHAR *argv[])
   if (argc < 3)
   {
     _tprintf(_T("NSIS plugin wrapper/tester\nUsage: %s [options] plugin function [args]\n"), argv[0]);
-    printf("Where options may be ommited, /silent /debug\n");
+    printf("Where options may be ommited, /silent\n");
     printf("Where plugin is the name (dll) of the plugin to load\n");
     printf("and function is the name of the exported function to invoke.\n");
     printf("User variables may be set using /VAR # str\n");
@@ -309,8 +307,6 @@ int _tmain(int argc, TCHAR *argv[])
     {
       if (lstrcmp(_T("/silent"), argv[i]) == 0) /* silent mode, no output */
         verbose = false; /* silent = true */
-      else if (lstrcmp(_T("/debug"), argv[i]) == 0) /* current just display stack */
-        debug = true;
       else  /* plugin name */
         pn = i;
     }
@@ -349,22 +345,20 @@ int _tmain(int argc, TCHAR *argv[])
   /*** NOTE: add any other initing your plugin may expect here ***/
 
 
-  /* display to user stack contents prior to invoking and all variables */
-  if (debug)
-    showstuff(user_vars, &stack);
-
   /* perform the call to plugin and display the results */
   if (verbose)
+  {
+    showstuff(user_vars, &stack);
     _tprintf(_T("now invoking %s.%s\n"), argv[pn], argv[pf]);
+  }
 
     plugin_thread(NULL);
 
   if (verbose)
+  {
     showresult(&stack);
-
-  /* display to user stack contents after invoking and all variables */
-  if (debug)
     showstuff(user_vars, &stack);
+  }
 
   return 0;
 }
