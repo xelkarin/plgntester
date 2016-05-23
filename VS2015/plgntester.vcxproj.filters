@@ -15,17 +15,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\nsis.ico">
+    <Image Include="..\src\nsis.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\plgntester.cpp">
+    <ClCompile Include="..\src\plgntester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\plgntester.rc">
+    <ResourceCompile Include="..\src\plgntester.rc">
       <Filter>Source Files</Filter>
     </ResourceCompile>
   </ItemGroup>

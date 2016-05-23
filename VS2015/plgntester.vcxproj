@@ -114,13 +114,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Image Include="..\nsis.ico" />
+    <Image Include="..\src\nsis.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\plgntester.cpp" />
+    <ClCompile Include="..\src\plgntester.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\plgntester.rc" />
+    <ResourceCompile Include="..\src\plgntester.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
