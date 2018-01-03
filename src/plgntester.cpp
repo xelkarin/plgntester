@@ -4,13 +4,8 @@
  */
 
 
-//#define WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <commctrl.h>
-#ifndef LVS_EX_LABELTIP
-#define LVS_EX_LABELTIP 0x00004000 // listview thingy, defined in PSDK's later than MSVC 6
-#endif
-#include <windowsx.h>
 
 #include <stdlib.h>
 #include <stdio.h>
