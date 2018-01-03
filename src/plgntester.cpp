@@ -90,7 +90,7 @@ void popstring(stack_t **stack, LPTSTR str)
   /* verify a valid stack (at least nonNULL) was provided */
   if (empty(stack))
   {
-    printf("Warning, attempt to pop from an empty stack!\n");
+    _tprintf(_T("Warning, attempt to pop from an empty stack!\n"));
     return;
   }
   element = *stack;
@@ -145,7 +145,7 @@ const LPCTSTR getuservar(LPTSTR user_vars, int which)
 {
   if ((which < 0) || (which >= MAXUSERVARS))
   {
-    printf("Warning attempting to get invalid user_var[%i]\n", which);
+    _tprintf(_T("Warning attempting to get invalid user_var[%i]\n"), which);
     return NULL;
   }
 
@@ -208,7 +208,7 @@ void showstuff(LPTSTR variables, stack_t **stacktop)
   int i;
   stack_t *element;
 
-  printf("User variables are:\n");
+  _tprintf(_T("User variables are:\n"));
   for (i = 0; i < 10; i++)
     _tprintf(_T("$%i = [%s]\n"), i, getuservar(variables, i));
   for (i = 10; i < 20; i++)
@@ -218,7 +218,7 @@ void showstuff(LPTSTR variables, stack_t **stacktop)
   _tprintf(_T("$OUTDIR   = [%s]\n"), getuservar(variables, 22));
   _tprintf(_T("$EXEDIR   = [%s]\n"), getuservar(variables, 23));
   _tprintf(_T("$LANGUAGE = [%s]\n"), getuservar(variables, 24));
-  printf("Stack is %s\n", empty(stacktop)?"empty":"");
+  _tprintf(_T("Stack is %s\n"), empty(stacktop)?_T("empty"):_T(""));
   if (!empty(stacktop))  /* peek at all elements */
   {
     element = *stacktop;
@@ -238,7 +238,7 @@ void showresult(stack_t **stack)
 {
   if (empty(stack))  /* we expect a success or error message pushed on stack */
   {
-    printf("No result returned on stack as stack is empty.\n");
+    _tprintf(_T("No result returned on stack as stack is empty.\n"));
     result[0] = '\0';
   }
   else
@@ -266,7 +266,7 @@ static DWORD WINAPI plugin_thread(LPVOID param)
 }
 
 
-int _tmain(int argc, TCHAR *argv[])
+int _tmain(int argc, LPTSTR argv[])
 {
   bool verbose=true;
   pluginFunc pFn;
@@ -285,13 +285,13 @@ int _tmain(int argc, TCHAR *argv[])
   if (argc < 3)
   {
     _tprintf(_T("NSIS plugin wrapper/tester\nUsage: %s [options] plugin function [args]\n"), argv[0]);
-    printf("Where options may be ommited, /silent\n");
-    printf("Where plugin is the name (dll) of the plugin to load\n");
-    printf("and function is the name of the exported function to invoke.\n");
-    printf("User variables may be set using /VAR # str\n");
-    printf("The remaining arguments (if any) are the strings pushed onto\n"
-           "the stack and passed to the plugin (strings are pushed in\n"
-           "reverse order passed on command line; ie use calling order).\n");
+    _tprintf(_T("Where options may be ommited, /silent\n"));
+    _tprintf(_T("Where plugin is the name (dll) of the plugin to load\n"));
+    _tprintf(_T("and function is the name of the exported function to invoke.\n"));
+    _tprintf(_T("User variables may be set using /VAR # str\n"));
+    _tprintf(_T("The remaining arguments (if any) are the strings pushed onto\n")
+             _T("the stack and passed to the plugin (strings are pushed in\n")
+             _T("reverse order passed on command line; ie use calling order).\n"));
     return 0;
   }
 
