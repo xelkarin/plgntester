@@ -7,12 +7,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgntester", "plgntester.vc
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug (ASCII)|x86 = Debug (ASCII)|x86
 		Debug|x86 = Debug|x86
+		Release (ASCII)|x86 = Release (ASCII)|x86
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EED26FD4-068A-41CC-B79E-BEF4BB0ABA82}.Debug (ASCII)|x86.ActiveCfg = Debug (ASCII)|Win32
+		{EED26FD4-068A-41CC-B79E-BEF4BB0ABA82}.Debug (ASCII)|x86.Build.0 = Debug (ASCII)|Win32
 		{EED26FD4-068A-41CC-B79E-BEF4BB0ABA82}.Debug|x86.ActiveCfg = Debug|Win32
 		{EED26FD4-068A-41CC-B79E-BEF4BB0ABA82}.Debug|x86.Build.0 = Debug|Win32
+		{EED26FD4-068A-41CC-B79E-BEF4BB0ABA82}.Release (ASCII)|x86.ActiveCfg = Release (ASCII)|Win32
+		{EED26FD4-068A-41CC-B79E-BEF4BB0ABA82}.Release (ASCII)|x86.Build.0 = Release (ASCII)|Win32
 		{EED26FD4-068A-41CC-B79E-BEF4BB0ABA82}.Release|x86.ActiveCfg = Release|Win32
 		{EED26FD4-068A-41CC-B79E-BEF4BB0ABA82}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection

@@ -1,8 +1,8 @@
 *.def
 *.exe
 *.o
-VS2015/Debug
-VS2015/Release
+VS2015/Debug*
+VS2015/Release*
 VS2015/plgntester.VC.db
 VS2015/plgntester.VC.VC.opendb
 VS2015/plgntester.vcxproj.user

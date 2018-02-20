@@ -20,7 +20,10 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\plgntester.cpp">
+    <ClCompile Include="..\src\pluginapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plgntester.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -28,5 +31,16 @@
     <ResourceCompile Include="..\src\plgntester.rc">
       <Filter>Source Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nsis_tchar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\pluginapi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
