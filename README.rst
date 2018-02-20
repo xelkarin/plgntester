@@ -1,4 +1,6 @@
+=====================================
 plgntester - NSIS Plugin Tester v0.01
+=====================================
 
 This is a command line program that can be used to
 invoke a NSIS plugin.  It supports passing any string
@@ -6,7 +8,7 @@ variable on the stack, setting any of the standard
 variables (user defined variables are unsupported),
 and can invoke any specified function in given plugin.
 
-Usage: plgnTester.exe [opts] plugin function {/VAR # str} [args]
+ Usage: ``plgnTester.exe [opts] plugin function {/VAR # str} [args]``
 
 plugin is the name of the plugin (or dll) to load, passed
 asis to LoadLibrary, so one can omit the .dll and normal
@@ -34,7 +36,6 @@ pass arguments on the command line in same order as if you
 were invoking the plugin from a NSIS script (calling order,
 which should match order plugin pops them).
 
-
 This is primary meant as a debugging tool, so should be
 modified if necessary to the plugin being tested, but
 should work asis for many.  When using a debugger, one
@@ -48,5 +49,7 @@ add the neccessary window.  Future versions may also
 add a /QUIET or /VERBOSE option allowing this to more
 easily used be used as a wrapper.
 
-KJD
-061122
+| KJD
+| 061122
+
+*Modified by Robert Gill to support NSIS 3.0 and UNICODE*
