@@ -1,6 +1,6 @@
 #
 # Created:  Fri 09 Feb 2018 06:31:34 PM PST
-# Modified: Fri 09 Feb 2018 06:40:22 PM PST
+# Modified: Mon 19 Feb 2018 07:21:16 PM PST
 #
 # Copyright 2018 (C) Robert Gill
 #
@@ -27,7 +27,9 @@ CC  = $(CCPATH)/$(HOST)-gcc
 CXX = $(CCPATH)/$(HOST)-g++
 RC = $(CCPATH)/$(HOST)-windres
 
-ifdef UNICODE
+UNICODE := true
+
+ifeq ($(UNICODE),true)
 UNICODE_CFLAGS  = -DUNICODE -D_UNICODE
 UNICODE_LDFLAGS = -municode
 endif
