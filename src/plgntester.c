@@ -163,7 +163,7 @@ int _tmain(int argc, _TCHAR *argv[])
   int i, j, pn=0, pf=0;
 
   /* these are passed to plugin */
-  stack_t *stack = (stack_t *) GlobalAlloc(GPTR, sizeof(stack_t));
+  stack_t *stack = NULL;
   TCHAR user_vars[sizeof(TCHAR)*NSIS_MAX_STRLEN*MAXUSERVARS];
 
   /* initialize global plugin variables */
