@@ -1,6 +1,6 @@
 #
 # Created:  Fri 09 Feb 2018 06:31:34 PM PST
-# Modified: Mon 19 Feb 2018 07:21:16 PM PST
+# Modified: Sat 24 Feb 2018 02:05:15 PM PST
 #
 # Copyright 2018 (C) Robert Gill
 #
@@ -19,12 +19,10 @@
 #
 
 CFLAGS   = -march=i686 -g3 -Og -Wall
-CXXFLAGS = -march=i686 -g3 -Og -Wall
 HOST     = i686-w64-mingw32
 
 CCPATH = /usr/bin
-CC  = $(CCPATH)/$(HOST)-gcc
-CXX = $(CCPATH)/$(HOST)-g++
+CC = $(CCPATH)/$(HOST)-gcc
 RC = $(CCPATH)/$(HOST)-windres
 
 UNICODE := true
@@ -35,7 +33,6 @@ UNICODE_LDFLAGS = -municode
 endif
 
 CFLAGS += $(UNICODE_CFLAGS)
-CXXFLAGS += $(UNICODE_CFLAGS)
 LDFLAGS = $(UNICODE_LDFLAGS) -static-libgcc
 
 TARGET = plgntester.exe
@@ -47,7 +44,7 @@ RES_OBJ = plgntester-rc.o
 all: $(TARGET)
 
 $(TARGET): $(OBJS) $(RES_OBJ)
-	$(CXX) $^ $(LDFLAGS) -o $@
+	$(CC) $^ $(LDFLAGS) -o $@
 
 $(RES_OBJ): $(RES_SRC)
 	$(RC) $(CPPFLAGS) -o $@ $<
